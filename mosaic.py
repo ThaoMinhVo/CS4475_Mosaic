@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import os
 
-image_dir = "input" # Folder for original images 
+image_dir = "images" # Folder for original images 
 resize_dir = "resized" # Folder for resized images 
 output_dir = "output" 
 image_files = os.listdir(image_dir)
@@ -21,4 +21,6 @@ def resizeImages(images):
 
 	# Returns array of resized images
 	return images
+
+resizeImages(image_files)
 
