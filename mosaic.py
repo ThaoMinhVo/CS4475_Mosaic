@@ -2,13 +2,16 @@ import cv2
 import numpy as np
 import os
 import math
+import pdb
 
 image_dir = "images"  # Folder for original images
 resize_dir = "resized"  # Folder for resized images
 output_dir = "output"
 image_files = os.listdir(image_dir)
 file_extensions = ["jpg", "jpeg", "png"]
-src_img = cv2.imread("image1.jpg", cv2.IMREAD_GRAYSCALE)
+# testing out a smaller resolutuon of image1.jpg
+src_img = cv2.imread("image1 copy.jpg", cv2.IMREAD_GRAYSCALE)
+# mosaic_img = np.zeros((src_img.shape[0]*17, src_img.shape[1]*25,3))
 
 # Input images are 500 * 333 pixels
 # Resizes input images to 25 x 17 pixels
@@ -17,7 +20,7 @@ src_img = cv2.imread("image1.jpg", cv2.IMREAD_GRAYSCALE)
 def resizeImages(images):
     for img in images:
         extension = img.split(".")[-1].lower()
-        if extension not in file_extensions:
+        if (extension not in file_extensions) or img.startswith('.'):
             images.remove(img)
         else:
             image = cv2.imread(os.path.join(image_dir, img))
@@ -38,56 +41,54 @@ def resizeImages(images):
 #                               (last value can be ignored)
 def avgRGB(img):
     avg = cv2.mean(img)
-    avg = avg[:3]
+    avg = avg[0]
+    # avg = avg[:3]
+    # print avg
     return avg
 
 
-# compares all resized images (25x17)  with a 25x17 block on the main Image
-# the image with the smallest color difference from the block on the image
-# will be used to fill in the mosaic
-#   Args:
-#      mainImg (numpy.ndarray) : greyscale or color image represented as a
-#                            numpy array
-#      images (nump.ndarray list) : list of images to be used in the mosaic
-#
-#   Returns:
-#       mainImg (numpy.ndarray) : the final mosaic
+def bestMatchImage(mainImg, images):
+    difference = 0
+    bestMatchImage = images[0]
+    mosaic_img = np.zeros((mainImg.shape[0]*17, mainImg.shape[1]*25,3))
+    # progress = 0 # lets me keep track of how long until program finishes
 
-def mosaic(mainImg, images):
+    for i in range(mainImg.shape[0]): 
+        for j in range(mainImg.shape[1]): 
+            # progress += 1
+            # print progress
+            smallest_difference = 255
 
-    for x in range(0, mainImg.shape[0], 25): #starting x coordinate of block
-        for y in range(0, mainImg.shape[1], 17): #starting y coordinate of block
-            smallest_difference = 110000
-            bestMatchImage = images[0]
             for img in images:
-                difference = 0
-                for j in range(25): #column of block
-                    for k in range(17): #row of block
-                        difference += math.sqrt(pow(img[j][k] - mainImg[x+j][y+k], 2))
-                if difference < smallest_difference:
-                    smallest_difference = difference
+                image_name = img
+                img = cv2.imread("resized/"+img)
+                difference = mainImg[i][j] - avgRGB(img)
+                # print "Difference: ",image_name, " ", progress
+
+                if abs(difference) < smallest_difference:
+                    smallest_difference = abs(difference)
                     bestMatchImage = img
-            for w in range(25): #column of block
-                    for z in range(17): #row of block
-                        mainImg[x+w][y+z] = bestMatchImage[w][z]
+                    # print smallest_difference, " ", progress
 
-    # Return image
-    return mainImg
+            # print best_name, " ", progress
+            index = (i,j)
+            insertImage(mosaic_img, bestMatchImage, index)
 
 
-# Put pictures together 
-def putTogether(src, images):
-    height, width, depth = src.shape
+    return mosaic_img
 
-    for row in range(len(src)):
-        for col in range(len(src[row])):
-            px = src[row, col]
-            compareBlock(px, images)
 
-        # Insert code to put images from compareColor together
+# insert picture into pixel
+def insertImage(mosaic_img, image, index):
+    for i in range(index[0]*17, index[0]*17+17):
+        for j in range(index[1]*25, index[1]*25+25):
+            print (i,j)
+            mosaic_img[i,j] = image[i%17,j%25]
 
 
 image_files = resizeImages(image_files)
-putTogether(src_img, image_files)
+mosaic = bestMatchImage(src_img, image_files)
+cv2.imwrite("mosaic.jpg",mosaic)
+
 
 
