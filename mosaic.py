@@ -21,10 +21,11 @@ def resizeImages(images):
         if (extension not in file_extensions) or img.startswith('.'):
             images.remove(img)
         else:
+            print img
             image = cv2.imread(os.path.join(image_dir, img))
             # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            resized = cv2.resize(image, (25, 17))
-            cv2.imwrite(resize_dir + "/" + img, resized)
+            # resized = cv2.resize(image, (25, 17))
+            # cv2.imwrite(resize_dir + "/" + img, resized)
 
     # Returns array of resized images
     return images
@@ -147,10 +148,10 @@ def insertImage(mosaic_img, image, index):
 
 
 image_files = resizeImages(image_files)
-mosaic = bestMatchImage(src_img, image_files)
+# mosaic = bestMatchImage(src_img, image_files)
 
 # Saves mosaic image to computer
-cv2.imwrite("mosaic.jpg",mosaic)
+# cv2.imwrite("mosaic.jpg",mosaic)
 
 
 
