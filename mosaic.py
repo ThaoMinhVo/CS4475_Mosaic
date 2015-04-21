@@ -11,7 +11,7 @@ image_files = os.listdir(image_dir)
 file_extensions = ["jpg", "jpeg", "png"]
 # !! testing out a smaller resolutuon of image1.jpg
 # src_img = cv2.imread("image1 copy.jpg", cv2.IMREAD_GRAYSCALE)
-src_img = cv2.imread("image1.jpg")
+src_img = cv2.imread("totoro.jpg")
 # mosaic_img = np.zeros((src_img.shape[0]*17, src_img.shape[1]*25,3))
 # mosaic_img = np.zeros((src_img.shape[0], src_img.shape[1], 3))
 
@@ -56,14 +56,24 @@ def avgRGBofBlock(mainImg,index):
     difference_y = mainImg.shape[0] - index[0]
     difference_x = mainImg.shape[1] - index[1]
 
-    if difference_y > 17:
+    if difference_y > 17 and difference_x > 25:
         for i in range(index[0], index[0]+17):
             for j in range(index[1], index[1]+25):
                 count += 1
                 pixelsum = np.add(pixelsum,mainImg[i,j])
-    else: 
+    elif difference_y <= 17 and difference_x > 25: 
         for i in range(index[0], index[0]+difference_y):
             for j in range(index[1], index[1]+25):
+                count += 1
+                pixelsum = np.add(pixelsum,mainImg[i,j])
+    elif difference_y > 17 and difference_x <= 25:
+        for i in range(index[0], index[0]+17):
+            for j in range(index[1], index[1]+difference_x):
+                count += 1
+                pixelsum = np.add(pixelsum,mainImg[i,j])
+    else:
+        for i in range(index[0], index[0]+difference_y):
+            for j in range(index[1], index[1]+difference_x):
                 count += 1
                 pixelsum = np.add(pixelsum,mainImg[i,j])
 
@@ -119,22 +129,28 @@ def bestMatchImage(mainImg, images):
 # insert picture into pixel of original image
 # ?? change to put image into block ?? 
 def insertImage(mosaic_img, image, index):
-    # for i in range(index[0]*17, index[0]*17+17):
-    #     for j in range(index[1]*25, index[1]*25+25):
-    #         # print (i,j)
-    #         mosaic_img[i,j] = image[i%17,j%25]
-
 
     difference = mosaic_img.shape[0] - index[0]
     d = mosaic_img.shape[1] - index[1]
-    if difference > 17:
+    if difference > 17 and d > 25:
         for i in range(index[0], index[0]+17):
             for j in range(index[1], index[1]+25):
                 mosaic_img[i,j] = image[i%17,j%25]
-    else:
+    elif difference <= 17 and d > 25:
         for i in range(index[0], index[0]+difference):
             for j in range(index[1], index[1]+25):
                 mosaic_img[i,j] = image[i%difference,j%25]
+    elif difference > 17 and d <= 25:
+        for i in range(index[0], index[0]+17):
+            for j in range(index[1], index[1]+d):
+                mosaic_img[i,j] = image[i%17,j%d]
+    else:
+        for i in range(index[0], index[0]+difference):
+            for j in range(index[1], index[1]+d):
+                mosaic_img[i,j] = image[i%difference,j%d]
+
+
+
 
 
 
