@@ -10,13 +10,11 @@ image_files = os.listdir(image_dir)
 file_extensions = ["jpg", "jpeg", "png"]
 # !! testing out a smaller resolutuon of image1.jpg
 # src_img = cv2.imread("image1 copy.jpg", cv2.IMREAD_GRAYSCALE)
-src_img = cv2.imread("totoro.jpg")
+src_img = cv2.imread("image.jpg")
 
 
-# Input images are 500 * 333 pixels
 # Resizes input images to 25 x 17 pixels
 # Keeps image dimensions but when comparing blocks
-#   last 10 rows will not be compared
 def resizeImages(images):
     for img in images:
         extension = img.split(".")[-1].lower()
@@ -84,14 +82,16 @@ def bestMatchImage(mainImg, images):
     bestMatchImage = images[0]
     # mosaic_img is array to store images for final image
     mosaic_img = np.zeros((mainImg.shape[0], mainImg.shape[1],3)) 
-    progress = 0 # lets me keep track of how long until program finishes
+    # progress = 0 # lets me keep track of how long until program finishes
     image_size = mainImg.shape[0]*mainImg.shape[1]
+    num_blocks = (mainImg.shape[0] / 17) * (mainImg.shape[1] / 25)
+    block_count = 0
 
     
     # Note: opencv stores image coordinates backwards (height, width)
-    for i in range(0,mainImg.shape[0],17): # 0 to height of image (ex. 333)
-        for j in range(0,mainImg.shape[1],25):  # 0 to width of image (ex. 500)
-            progress += 1
+    for i in range(0,mainImg.shape[0],17): # 0 to height of image 
+        for j in range(0,mainImg.shape[1],25):  # 0 to width of image 
+            # progress += 1
             # print progress, "out of", image_size, "pixels"  
             # smallest_difference = 255 # for grayscale
             smallest_difference = np.sqrt(3*np.power(255,2))
@@ -115,6 +115,8 @@ def bestMatchImage(mainImg, images):
 
             index = (i,j)
             insertImage(mosaic_img, bestMatchImage, index)
+            # print count, "out of", num_blocks
+
 
 
     return mosaic_img
@@ -148,7 +150,7 @@ image_files = resizeImages(image_files)
 mosaic = bestMatchImage(src_img, image_files)
 
 # Saves mosaic image to computer
-cv2.imwrite("mosaic1.jpg",mosaic)
+cv2.imwrite("mosaic.jpg",mosaic)
 
 
 
