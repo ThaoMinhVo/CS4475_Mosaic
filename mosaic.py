@@ -7,7 +7,6 @@ import pdb
 image_dir = "images"  # Folder for original images
 resize_dir = "resized"  # Folder for resized images
 image_files = os.listdir(image_dir)
-file_extensions = ["jpg", "jpeg", "png"]
 # !! testing out a smaller resolutuon of image1.jpg
 # src_img = cv2.imread("image1 copy.jpg", cv2.IMREAD_GRAYSCALE)
 src_img = cv2.imread("image.jpg")
@@ -16,15 +15,15 @@ src_img = cv2.imread("image.jpg")
 # Resizes input images to 25 x 17 pixels
 # Keeps image dimensions but when comparing blocks
 def resizeImages(images):
+    file_extensions = ["jpg", "jpeg", "png"]
+    images[:] = [img for img in images if img.split(".")[-1].lower() in file_extensions]
+    # print images
     for img in images:
-        extension = img.split(".")[-1].lower()
-        if (extension not in file_extensions) or img.startswith('.'):
-            images.remove(img)
-        else:
-            image = cv2.imread(os.path.join(image_dir, img))
-            # image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            resized = cv2.resize(image, (25, 17))
-            cv2.imwrite(resize_dir + "/" + img, resized)
+        print img
+        image = cv2.imread(os.path.join(image_dir,img))
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        resized = cv2.resize(image, (25,17))
+        cv2.imwrite(resize_dir + "/" + img, resized)
 
     # Returns array of resized images
     return images
