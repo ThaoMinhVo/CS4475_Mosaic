@@ -11,8 +11,9 @@ image_files = os.listdir(image_dir)
 file_extensions = ["jpg", "jpeg", "png"]
 # !! testing out a smaller resolutuon of image1.jpg
 # src_img = cv2.imread("image1 copy.jpg", cv2.IMREAD_GRAYSCALE)
-src_img = cv2.imread("image1 copy.jpg")
+src_img = cv2.imread("image1.jpg")
 # mosaic_img = np.zeros((src_img.shape[0]*17, src_img.shape[1]*25,3))
+# mosaic_img = np.zeros((src_img.shape[0], src_img.shape[1], 3))
 
 # Input images are 500 * 333 pixels
 # Resizes input images to 25 x 17 pixels
@@ -48,8 +49,27 @@ def avgRGB(img):
     return avg
 
 
-# ?? maybe make a method to find the average RGB of a block ??  
+def avgRGBofBlock(mainImg,index):
+    pixelsum = np.array([0,0,0])
+    count = 0 # number of pixels
 
+    difference_y = mainImg.shape[0] - index[0]
+    difference_x = mainImg.shape[1] - index[1]
+
+    if difference_y > 17:
+        for i in range(index[0], index[0]+17):
+            for j in range(index[1], index[1]+25):
+                count += 1
+                pixelsum = np.add(pixelsum,mainImg[i,j])
+    else: 
+        for i in range(index[0], index[0]+difference_y):
+            for j in range(index[1], index[1]+25):
+                count += 1
+                pixelsum = np.add(pixelsum,mainImg[i,j])
+
+    average = pixelsum / count
+    # print "Average: ",average
+    return average
 
 def bestMatchImage(mainImg, images):
     difference = 0
@@ -57,26 +77,32 @@ def bestMatchImage(mainImg, images):
     # mosaic_img is array to store images for final image
     # ?? If output image is same as original, then ?? 
     # mosaic_img = np.zeros((mainImg.shape[0], maingImg.shape[1], 3))
-    mosaic_img = np.zeros((mainImg.shape[0]*17, mainImg.shape[1]*25,3)) 
+    mosaic_img = np.zeros((mainImg.shape[0], mainImg.shape[1],3)) 
     progress = 0 # lets me keep track of how long until program finishes
     image_size = mainImg.shape[0]*mainImg.shape[1]
 
     
     # Note: opencv stores image coordinates backwards (height, width)
-    for i in range(mainImg.shape[0]): # 0 to height of image (ex. 333)
-        for j in range(mainImg.shape[1]):  # 0 to width of image (ex. 500)
+    for i in range(0,mainImg.shape[0],17): # 0 to height of image (ex. 333)
+        for j in range(0,mainImg.shape[1],25):  # 0 to width of image (ex. 500)
             progress += 1
             # ?? Might be different since you're working with blocks ?? 
-            print progress, "out of", image_size, "pixels"  
+            # print progress, "out of", image_size, "pixels"  
             # smallest_difference = 255 # for grayscale
             smallest_difference = np.sqrt(3*np.power(255,2))
+
+            block_index = (i,j)
+            block_avg = avgRGBofBlock(mainImg, block_index)
+            # print block_avg[0], block_avg[1], block_avg[2]
 
             for img in images:
                 image_name = img
                 img = cv2.imread("resized/"+img)
-                difference = np.sqrt(np.power(mainImg[i,j,0]-avgRGB(img)[0],2) +
-                    np.power(mainImg[i,j,1]-avgRGB(img)[1],2) +
-                    np.power(mainImg[i,j,2]-avgRGB(img)[2],2))
+                difference = np.sqrt(np.power(block_avg[0]-avgRGB(img)[0],2) +
+                    np.power(block_avg[1]-avgRGB(img)[1],2) +
+                    np.power(block_avg[2]-avgRGB(img)[2],2))
+
+            # print "Difference: ", difference
                 # difference = mainImg[i][j] - avgRGB(img) # for grayscale
 
                 if difference < smallest_difference:
@@ -93,17 +119,30 @@ def bestMatchImage(mainImg, images):
 # insert picture into pixel of original image
 # ?? change to put image into block ?? 
 def insertImage(mosaic_img, image, index):
-    for i in range(index[0]*17, index[0]*17+17):
-        for j in range(index[1]*25, index[1]*25+25):
-            # print (i,j)
-            mosaic_img[i,j] = image[i%17,j%25]
+    # for i in range(index[0]*17, index[0]*17+17):
+    #     for j in range(index[1]*25, index[1]*25+25):
+    #         # print (i,j)
+    #         mosaic_img[i,j] = image[i%17,j%25]
+
+
+    difference = mosaic_img.shape[0] - index[0]
+    d = mosaic_img.shape[1] - index[1]
+    if difference > 17:
+        for i in range(index[0], index[0]+17):
+            for j in range(index[1], index[1]+25):
+                mosaic_img[i,j] = image[i%17,j%25]
+    else:
+        for i in range(index[0], index[0]+difference):
+            for j in range(index[1], index[1]+25):
+                mosaic_img[i,j] = image[i%difference,j%25]
+
 
 
 image_files = resizeImages(image_files)
 mosaic = bestMatchImage(src_img, image_files)
 
 # Saves mosaic image to computer
-# cv2.imwrite("mosaic.jpg",mosaic)
+cv2.imwrite("mosaic1.jpg",mosaic)
 
 
 
